@@ -1,0 +1,58 @@
+{
+	"AWSTemplateFormatVersion" : "2010-09-09",
+	"Description" : "AWS Policy Template.",
+	"Resources" : {
+		"biae_sharp_S3_special_customer_role" : {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+					{
+						"Effect" : "Allow",
+						"Condition" : {
+							"StringEquals" : "SAML:aud: https://signin.aws.amazon.com/saml"
+						
+						},
+						"Principal": {
+							"Federated": { "Fn::Sub" : "arn:aws:iam::${AWS::AccountId}:saml-provider/adfs" }
+						},
+						"Action": [
+							"sts:AssumeRoleWithSAML"
+						]
+					}]
+				},
+				"ManagedPolicyArns": [
+					{ "Ref" : "biae_sharp_S3_special_customer_policy" }
+				]
+			}
+		},
+
+		"biae_sharp_S3_special_customer_policy" : {
+			"Type" : "AWS::IAM::ManagedPolicy",
+			"Properties" : {
+				"Description" : "Policy for creating a fine grained S3 access for Customer data access group and based on data classification",
+				"Path" : "/",
+				"PolicyDocument" :   {
+					"Version":"2012-10-17", 
+					"Statement" : [{
+						"Effect" : "Allow",           
+						"Action" : "s3:GetObject",
+						"Resource" : [
+							"arn:aws:s3:::biae-dev-raw/*",
+							"arn:aws:s3:::biae-dev-curated/*",
+							"arn:aws:s3:::biae-dev-gold/*"
+						], 
+						"Condition" : {
+							"ForAllValues:StringEquals" : { 
+								"s3:ExistingObjectTag/dataaccessgroup": "Customer",
+								"s3:ExistingObjectTag/dataaccess": "Special"
+							}
+						}
+					}]
+				},
+			"Groups" : ["TestDBGroup"]
+			}
+		}
+	}
+}
