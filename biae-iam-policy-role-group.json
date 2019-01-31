@@ -2,32 +2,6 @@
 	"AWSTemplateFormatVersion" : "2010-09-09",
 	"Description" : "AWS Policy Template.",
 	"Resources" : {
-		"biae_sharp_S3_special_customer_role" : {
-			"Type": "AWS::IAM::Role",
-			"Properties": {
-				"AssumeRolePolicyDocument": {
-					"Version": "2012-10-17",
-					"Statement": [
-					{
-						"Effect" : "Allow",
-						"Condition" : {
-							"StringEquals" : "SAML:aud: https://signin.aws.amazon.com/saml"
-						
-						},
-						"Principal": {
-							"Federated": { "Fn::Sub" : "arn:aws:iam::${AWS::AccountId}:saml-provider/adfs" }
-						},
-						"Action": [
-							"sts:AssumeRoleWithSAML"
-						]
-					}]
-				},
-				"ManagedPolicyArns": [
-					{ "Ref" : "biae_sharp_S3_special_customer_policy" }
-				]
-			}
-		},
-
 		"biae_sharp_S3_special_customer_policy" : {
 			"Type" : "AWS::IAM::ManagedPolicy",
 			"Properties" : {
@@ -50,8 +24,33 @@
 							}
 						}
 					}]
+				}
+			}
+		},
+		"biae_sharp_S3_special_customer_role" : {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+					{
+						"Effect" : "Allow",
+						"Condition" : {
+							"StringEquals" : "SAML:aud: https://signin.aws.amazon.com/saml"
+						
+						},
+						"Principal": {
+							"Federated": { "Fn::Sub" : "arn:aws:iam::${AWS::AccountId}:saml-provider/adfs" }
+						},
+						"Action": [
+							"sts:AssumeRoleWithSAML"
+						]
+					}]
 				},
-			"Groups" : ["TestDBGroup"]
+				"ManagedPolicyArns": [
+					{ "Ref" : "biae_sharp_S3_special_customer_policy" },
+					{ "Ref"    : "BIAECommonKMSPolicy"}
+				]
 			}
 		}
 	}
